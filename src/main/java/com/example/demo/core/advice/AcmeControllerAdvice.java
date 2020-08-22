@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
-public class AcmeControllerAdvice  extends ResponseEntityExceptionHandler {
+public class AcmeControllerAdvice extends ResponseEntityExceptionHandler {
 
     //对HTTP请求参数进行处理
     @InitBinder
@@ -30,7 +30,7 @@ public class AcmeControllerAdvice  extends ResponseEntityExceptionHandler {
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<Object> handleBaseException(
             BaseException ex, WebRequest request) {
-        Result fail = Result.fail(String.valueOf(ex.getCode()), null,ex.getMessage());
+        Result fail = Result.fail(String.valueOf(ex.getCode()), null, ex.getMessage());
         return new ResponseEntity<>(fail, ex.getStatus());
     }
 
