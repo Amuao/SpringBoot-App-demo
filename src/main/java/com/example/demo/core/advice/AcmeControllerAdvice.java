@@ -1,5 +1,7 @@
 package com.example.demo.core.advice;
 
+import com.example.demo.core.base.Result;
+import com.example.demo.core.exception.BaseException;
 import org.springframework.format.datetime.DateFormatter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -12,11 +14,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -28,15 +26,12 @@ public class AcmeControllerAdvice  extends ResponseEntityExceptionHandler {
         binder.addCustomFormatter(new DateFormatter("yyyy-MM-dd HH:mm:ss"));
     }
 
-    //重写运行时异常
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Object> handleRuntimeException(
-            Exception ex, WebRequest request) {
-
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    //自定义异常重新封装
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<Object> handleBaseException(
+            BaseException ex, WebRequest request) {
+        Result fail = Result.fail(String.valueOf(ex.getCode()), null,ex.getMessage());
+        return new ResponseEntity<>(fail, ex.getStatus());
     }
 
     //重写Valid参数校验
@@ -44,19 +39,12 @@ public class AcmeControllerAdvice  extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers,
             HttpStatus status, WebRequest request) {
-
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDate.now());
-        body.put("status", status.value());
-
         List<String> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(x -> x.getDefaultMessage())
                 .collect(Collectors.toList());
-
-        body.put("errors", errors);
-
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        Result fail = Result.fail(String.valueOf(HttpStatus.BAD_REQUEST.value()), null, errors.toString());
+        return new ResponseEntity<>(fail, HttpStatus.BAD_REQUEST);
     }
 }
