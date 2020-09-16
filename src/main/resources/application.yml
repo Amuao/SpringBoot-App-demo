@@ -11,7 +11,17 @@ spring:
     url: jdbc:mysql://localhost:3307/test?useUnicode=true&characterEncoding=utf-8
     driver-class-name: com.mysql.cj.jdbc.Driver
   redis:
-    port: 6379
+    cluster:
+      nodes:
+        - 127.0.0.1:7001
+        - 127.0.0.1:7002
+        - 127.0.0.1:7003
+    timeout: 60s
+    lettuce:
+      cluster:
+        refresh:
+          adaptive: true
+          period: 60s
 pagehelper:
   helperDialect: mysql
   reasonable: true
